@@ -22,14 +22,23 @@
 </div>
 
 <div id="preview-container" class="markdown-preview"></div>
-<div class="wiki-editor-container">
+<div class="wiki-editor-container" data-wiki-editor-type="{{ editor_type or 'Text' }}" data-wiki-space="{{ wiki_space or '' }}">
   <div class="wiki-title-container">
     <label class="text-sm">Title</label>
     <input type="text" class="form-control wiki-title-input" value="" placeholder="What's the Wiki Title?" />
   </div>
-  <label class="text-sm">Content</label>
+
+  <!-- TipTap Rich Text Editor (shown when editor_type is "Rich Text") -->
+  <div class="wiki-tiptap-editor-container" style="display: none;">
+    <label class="text-sm">Content</label>
+    <div id="tiptap-toolbar" class="tiptap-toolbar-container"></div>
+    <div id="wiki-tiptap-editor" class="wiki-tiptap-editor"></div>
+  </div>
+
+  <!-- Ace Editor (shown when editor_type is "Text" or "YAML") -->
   <div class="editor-container">
-    <div class="toolbar">
+    <label class="text-sm">Content</label>
+    <div class="toolbar" id="markdown-toolbar">
       <button data-mde-button="bold" title="Bold">
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
           stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-bold">

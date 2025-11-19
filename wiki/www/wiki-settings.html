@@ -1,0 +1,407 @@
+{% extends "templates/web.html" %}
+
+{% block title %}{{ _("Wiki Settings") }}{% endblock %}
+
+{% block head_include %}
+{{ super() }}
+{{ include_style('wiki.bundle.css') }}
+<style>
+  .wiki-settings-container {
+    max-width: 1200px;
+    margin: 2rem auto;
+    padding: 0 1rem;
+  }
+
+  .settings-header {
+    margin-bottom: 2rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid var(--border-color, #dee2e6);
+  }
+
+  .settings-header h1 {
+    font-size: 2rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+  }
+
+  .settings-header p {
+    color: var(--text-muted, #6c757d);
+  }
+
+  .settings-nav {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    border-bottom: 1px solid var(--border-color, #dee2e6);
+    overflow-x: auto;
+  }
+
+  .settings-nav-item {
+    padding: 0.75rem 1rem;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    white-space: nowrap;
+    transition: all 0.2s ease;
+    color: var(--text-color, #495057);
+    text-decoration: none;
+  }
+
+  .settings-nav-item:hover {
+    color: var(--primary-color, #007bff);
+    background: var(--hover-bg, #f8f9fa);
+  }
+
+  .settings-nav-item.active {
+    color: var(--primary-color, #007bff);
+    border-bottom-color: var(--primary-color, #007bff);
+    font-weight: 600;
+  }
+
+  .settings-section {
+    display: none;
+    animation: fadeIn 0.3s ease;
+  }
+
+  .settings-section.active {
+    display: block;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .settings-card {
+    background: white;
+    border: 1px solid var(--border-color, #dee2e6);
+    border-radius: 0.5rem;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .settings-card h3 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+  }
+
+  .settings-card p {
+    color: var(--text-muted, #6c757d);
+    margin-bottom: 1rem;
+  }
+
+  .form-group {
+    margin-bottom: 1.5rem;
+  }
+
+  .form-group label {
+    display: block;
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+  }
+
+  .form-group input,
+  .form-group select,
+  .form-group textarea {
+    width: 100%;
+    padding: 0.5rem;
+    border: 1px solid var(--border-color, #dee2e6);
+    border-radius: 0.25rem;
+  }
+
+  .form-group input[type="checkbox"] {
+    width: auto;
+    margin-right: 0.5rem;
+  }
+
+  .btn-primary {
+    background: var(--primary-color, #007bff);
+    color: white;
+    padding: 0.5rem 1rem;
+    border: none;
+    border-radius: 0.25rem;
+    cursor: pointer;
+    font-weight: 500;
+  }
+
+  .btn-primary:hover {
+    background: var(--primary-dark, #0056b3);
+  }
+
+  .alert {
+    padding: 1rem;
+    border-radius: 0.25rem;
+    margin-bottom: 1rem;
+  }
+
+  .alert-info {
+    background: #d1ecf1;
+    border: 1px solid #bee5eb;
+    color: #0c5460;
+  }
+
+  .alert-warning {
+    background: #fff3cd;
+    border: 1px solid #ffeaa7;
+    color: #856404;
+  }
+</style>
+{% endblock %}
+
+{% block page_content %}
+<div class="wiki-settings-container">
+  <div class="settings-header">
+    <h1>{{ _("Wiki Settings") }}</h1>
+    <p>{{ _("Configure your Wiki workspace and preferences") }}</p>
+  </div>
+
+  <div class="settings-nav">
+    <a class="settings-nav-item active" data-section="general">{{ _("General") }}</a>
+    <a class="settings-nav-item" data-section="editor">{{ _("Editor") }}</a>
+    <a class="settings-nav-item" data-section="appearance">{{ _("Appearance") }}</a>
+    <a class="settings-nav-item" data-section="permissions">{{ _("Permissions") }}</a>
+    <a class="settings-nav-item" data-section="advanced">{{ _("Advanced") }}</a>
+  </div>
+
+  <!-- General Settings -->
+  <div class="settings-section active" id="general-section">
+    <div class="settings-card">
+      <h3>{{ _("General Settings") }}</h3>
+      <p>{{ _("Configure basic Wiki settings") }}</p>
+      
+      <div class="form-group">
+        <label>{{ _("Default Wiki Space") }}</label>
+        <input type="text" id="default-wiki-space" class="form-control" value="{{ default_wiki_space or 'Wiki' }}" />
+        <small class="text-muted">{{ _("The default space to redirect to when accessing /wiki") }}</small>
+      </div>
+
+      <div class="form-group">
+        <label>
+          <input type="checkbox" id="enable-table-of-contents" {{ 'checked' if enable_table_of_contents else '' }} />
+          {{ _("Enable Table of Contents") }}
+        </label>
+        <small class="text-muted">{{ _("Show table of contents on wiki pages") }}</small>
+      </div>
+
+      <div class="form-group">
+        <label>
+          <input type="checkbox" id="collapse-sidebar-groups" {{ 'checked' if collapse_sidebar_groups else '' }} />
+          {{ _("Collapse Sidebar Groups") }}
+        </label>
+        <small class="text-muted">{{ _("Collapse sidebar groups by default") }}</small>
+      </div>
+
+      <div class="form-group">
+        <label>
+          <input type="checkbox" id="disable-guest-access" {{ 'checked' if disable_guest_access else '' }} />
+          {{ _("Disable Guest Access") }}
+        </label>
+        <small class="text-muted">{{ _("Require login to view wiki pages") }}</small>
+      </div>
+
+      <button class="btn btn-primary" onclick="saveGeneralSettings()">{{ _("Save Changes") }}</button>
+    </div>
+  </div>
+
+  <!-- Editor Settings -->
+  <div class="settings-section" id="editor-section">
+    <div class="settings-card">
+      <h3>{{ _("Editor Settings") }}</h3>
+      <p>{{ _("Configure the default editor and editing preferences") }}</p>
+
+      <div class="alert alert-info">
+        <strong>{{ _("Editor Types:") }}</strong>
+        <ul>
+          <li><strong>{{ _("Text") }}:</strong> {{ _("Markdown editor with syntax highlighting") }}</li>
+          <li><strong>{{ _("Rich Text") }}:</strong> {{ _("WYSIWYG editor with visual formatting") }}</li>
+          <li><strong>{{ _("YAML") }}:</strong> {{ _("YAML editor for structured data") }}</li>
+        </ul>
+      </div>
+
+      <div class="form-group">
+        <label>{{ _("Default Editor Type") }}</label>
+        <select id="default-editor-type" class="form-control">
+          <option value="Text">{{ _("Text (Markdown)") }}</option>
+          <option value="Rich Text">{{ _("Rich Text (WYSIWYG)") }}</option>
+          <option value="YAML">{{ _("YAML") }}</option>
+        </select>
+        <small class="text-muted">{{ _("Default editor type for new wiki pages") }}</small>
+      </div>
+
+      <div class="form-group">
+        <label>
+          <input type="checkbox" id="enable-autosave" checked />
+          {{ _("Enable Auto-save") }}
+        </label>
+        <small class="text-muted">{{ _("Automatically save drafts to prevent data loss") }}</small>
+      </div>
+
+      <div class="form-group">
+        <label>{{ _("Auto-save Interval (seconds)") }}</label>
+        <input type="number" id="autosave-interval" class="form-control" value="30" min="10" max="300" />
+        <small class="text-muted">{{ _("How often to auto-save (10-300 seconds)") }}</small>
+      </div>
+
+      <button class="btn btn-primary" onclick="saveEditorSettings()">{{ _("Save Changes") }}</button>
+    </div>
+  </div>
+
+  <!-- Appearance Settings -->
+  <div class="settings-section" id="appearance-section">
+    <div class="settings-card">
+      <h3>{{ _("Appearance Settings") }}</h3>
+      <p>{{ _("Customize the look and feel of your Wiki") }}</p>
+
+      <div class="form-group">
+        <label>{{ _("Light Mode Logo") }}</label>
+        <input type="text" id="light-mode-logo" class="form-control" value="{{ logo or '' }}" />
+        <small class="text-muted">{{ _("URL or path to light mode logo") }}</small>
+      </div>
+
+      <div class="form-group">
+        <label>{{ _("Dark Mode Logo") }}</label>
+        <input type="text" id="dark-mode-logo" class="form-control" value="{{ dark_mode_logo or '' }}" />
+        <small class="text-muted">{{ _("URL or path to dark mode logo") }}</small>
+      </div>
+
+      <button class="btn btn-primary" onclick="saveAppearanceSettings()">{{ _("Save Changes") }}</button>
+    </div>
+  </div>
+
+  <!-- Permissions Settings -->
+  <div class="settings-section" id="permissions-section">
+    <div class="settings-card">
+      <h3>{{ _("Permissions & Access") }}</h3>
+      <p>{{ _("Manage who can access and edit wiki content") }}</p>
+
+      <div class="alert alert-info">
+        <strong>{{ _("Wiki Roles:") }}</strong>
+        <ul>
+          <li><strong>{{ _("Wiki Manager") }}:</strong> {{ _("Full access to all wiki settings and content") }}</li>
+          <li><strong>{{ _("Wiki Approver") }}:</strong> {{ _("Can approve and publish wiki pages") }}</li>
+          <li><strong>{{ _("System Manager") }}:</strong> {{ _("Full system access") }}</li>
+        </ul>
+      </div>
+
+      <div class="form-group">
+        <label>{{ _("Your Current Roles") }}</label>
+        <div id="user-roles">
+          {% for role in user_roles %}
+          <span class="badge badge-primary">{{ role }}</span>
+          {% endfor %}
+        </div>
+      </div>
+
+      {% if is_wiki_admin %}
+      <div class="alert alert-warning">
+        <strong>{{ _("Note:") }}</strong> {{ _("As a Wiki Manager, you have full access to all settings and content.") }}
+      </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Advanced Settings -->
+  <div class="settings-section" id="advanced-section">
+    <div class="settings-card">
+      <h3>{{ _("Advanced Settings") }}</h3>
+      <p>{{ _("Advanced configuration options") }}</p>
+
+      <div class="form-group">
+        <label>
+          <input type="checkbox" id="use-sqlite-search" {{ 'checked' if use_sqlite_for_search else '' }} />
+          {{ _("Use SQLite for Search") }}
+        </label>
+        <small class="text-muted">{{ _("Use SQLite FTS for faster search (experimental)") }}</small>
+      </div>
+
+      <div class="form-group">
+        <label>
+          <input type="checkbox" id="use-redisearch" {{ 'checked' if use_redisearch_for_search else '' }} />
+          {{ _("Use Redisearch for Search") }}
+        </label>
+        <small class="text-muted">{{ _("Use Redisearch for more accurate results") }}</small>
+      </div>
+
+      <div class="form-group">
+        <label>{{ _("Custom JavaScript") }}</label>
+        <textarea id="custom-javascript" class="form-control" rows="10">{{ javascript or '' }}</textarea>
+        <small class="text-muted">{{ _("Add custom JavaScript code to all wiki pages") }}</small>
+      </div>
+
+      <button class="btn btn-primary" onclick="saveAdvancedSettings()">{{ _("Save Changes") }}</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Settings navigation
+  document.querySelectorAll('.settings-nav-item').forEach(item => {
+    item.addEventListener('click', (e) => {
+      e.preventDefault();
+      const section = item.dataset.section;
+      
+      // Update nav items
+      document.querySelectorAll('.settings-nav-item').forEach(nav => nav.classList.remove('active'));
+      item.classList.add('active');
+      
+      // Update sections
+      document.querySelectorAll('.settings-section').forEach(sec => sec.classList.remove('active'));
+      document.getElementById(`${section}-section`).classList.add('active');
+    });
+  });
+
+  // Save functions
+  function saveGeneralSettings() {
+    const data = {
+      default_wiki_space: document.getElementById('default-wiki-space').value,
+      enable_table_of_contents: document.getElementById('enable-table-of-contents').checked ? 1 : 0,
+      collapse_sidebar_groups: document.getElementById('collapse-sidebar-groups').checked ? 1 : 0,
+      disable_guest_access: document.getElementById('disable-guest-access').checked ? 1 : 0,
+    };
+    
+    saveSettings(data, 'General settings saved successfully');
+  }
+
+  function saveEditorSettings() {
+    frappe.show_alert({
+      message: __('Editor settings are configured per Wiki Space'),
+      indicator: 'blue',
+    });
+  }
+
+  function saveAppearanceSettings() {
+    const data = {
+      logo: document.getElementById('light-mode-logo').value,
+      dark_mode_logo: document.getElementById('dark-mode-logo').value,
+    };
+    
+    saveSettings(data, 'Appearance settings saved successfully');
+  }
+
+  function saveAdvancedSettings() {
+    const data = {
+      use_sqlite_for_search: document.getElementById('use-sqlite-search').checked ? 1 : 0,
+      use_redisearch_for_search: document.getElementById('use-redisearch').checked ? 1 : 0,
+      javascript: document.getElementById('custom-javascript').value,
+    };
+    
+    saveSettings(data, 'Advanced settings saved successfully');
+  }
+
+  function saveSettings(data, successMessage) {
+    frappe.call({
+      method: 'wiki.wiki.doctype.wiki_settings.wiki_settings.update_settings',
+      args: data,
+      callback: (r) => {
+        if (!r.exc) {
+          frappe.show_alert({
+            message: __(successMessage),
+            indicator: 'green',
+          });
+        }
+      },
+    });
+  }
+</script>
+{% endblock %}
+

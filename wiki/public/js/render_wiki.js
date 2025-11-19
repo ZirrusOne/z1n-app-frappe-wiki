@@ -238,9 +238,16 @@ window.RenderWiki = class RenderWiki extends Wiki {
         primary_action: {
           label: "Yes",
           action() {
-            toggleEditor();
-            $('.sidebar-item[data-name="new-wiki-page"]').remove();
-            set_search_params();
+            // Check if this is a YAML page - if so, reload to properly render
+            const editorType = document.querySelector('[data-wiki-editor-type]')?.dataset?.wikiEditorType;
+            if (editorType === "YAML") {
+              // Reload the page without edit mode
+              window.location.href = window.location.pathname;
+            } else {
+              toggleEditor();
+              $('.sidebar-item[data-name="new-wiki-page"]').remove();
+              set_search_params();
+            }
             discardDialog.hide();
           },
         },
@@ -699,6 +706,7 @@ window.RenderWiki = class RenderWiki extends Wiki {
       const route =
         $(".wiki-space-route-block").text().trim() +
         $('input[name="pageRoute"]').val();
+      const editor = $('select[name="pageEditor"]').val();
 
       frappe
         .call({
@@ -708,6 +716,7 @@ window.RenderWiki = class RenderWiki extends Wiki {
             settings: {
               hide_on_sidebar: !!hideOnSidebar,
               route,
+              editor,
             },
           },
         })

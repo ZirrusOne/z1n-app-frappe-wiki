@@ -11,6 +11,10 @@ from wiki.wiki.doctype.wiki_page.search import build_index_in_background, drop_i
 
 class WikiSpace(Document):
 	def before_insert(self):
+		"""
+		Create a default wiki page when sidebar is empty.
+		The new page inherits the editor type from the space's default_editor setting.
+		"""
 		# insert a new wiki page when sidebar is empty
 		if not self.wiki_sidebars:
 			wiki_page = frappe.get_doc(
@@ -20,6 +24,7 @@ class WikiSpace(Document):
 					"route": f"{self.route}/new-wiki-page",
 					"published": 1,
 					"content": f"Welcome to Wiki Space {self.route}",
+					"editor": self.default_editor or "Text",
 				}
 			)
 			wiki_page.insert()

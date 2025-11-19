@@ -15,6 +15,7 @@
   "route",
   "published",
   "allow_guest",
+  "editor",
   "section_break_4",
   "content",
   "meta_tags_section",
@@ -76,6 +77,13 @@
    "label": "Allow Guest"
   },
   {
+   "fieldname": "editor",
+   "fieldtype": "Link",
+   "label": "Editor",
+   "options": "Wiki Editor",
+   "description": "Editor type for this page (Text or YAML)"
+  },
+  {
    "fieldname": "meta_tags_section",
    "fieldtype": "Section Break",
    "label": "Meta Tags"
@@ -114,7 +122,7 @@
   }
  ],
  "make_attachments_public": 1,
- "modified": "2025-10-01 12:12:16.380238",
+ "modified": "2025-10-07 12:00:00.000000",
  "modified_by": "Administrator",
  "module": "Wiki",
  "name": "Wiki Page",
@@ -142,6 +150,18 @@
    "read": 1,
    "report": 1,
    "role": "Wiki Approver",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Wiki Manager",
    "share": 1,
    "write": 1
   }

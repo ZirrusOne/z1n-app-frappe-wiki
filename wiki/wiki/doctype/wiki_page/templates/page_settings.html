@@ -21,6 +21,15 @@
                                 style="border-top-left-radius: 0; border-bottom-left-radius: 0;">
                         </div>
                     </div>
+                    <div class="mt-4">
+                        <label class="text-muted text-xs" for="pageEditor">Editor Type</label>
+                        <select id="pageEditor" name="pageEditor" class="form-control">
+                            <option value="Rich Text" {{ 'selected' if editor_type == 'Rich Text' else '' }}>Rich Text (WYSIWYG)</option>
+                            <option value="Text" {{ 'selected' if editor_type == 'Text' else '' }}>Text (Markdown)</option>
+                            <option value="YAML" {{ 'selected' if editor_type == 'YAML' else '' }}>YAML</option>
+                        </select>
+                        <small class="form-text text-muted">Select the editor type for this page. Changing this will reload the page.</small>
+                    </div>
                     <div class="mt-4 flex align-content-center">
                         <input type="checkbox" id="pageHideOnSidebar" {{ 'checked' if bool(hide_on_sidebar) else '' }}
                             name="pageHideOnSidebar">

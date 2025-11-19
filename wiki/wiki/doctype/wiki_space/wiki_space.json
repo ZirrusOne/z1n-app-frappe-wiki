@@ -14,6 +14,8 @@
   "column_break_bynr",
   "app_switcher_logo",
   "favicon",
+  "section_break_editor",
+  "default_editor",
   "section_break_z5nn",
   "wiki_sidebars",
   "navbar_tab",
@@ -21,7 +23,10 @@
   "light_mode_logo",
   "dark_mode_logo",
   "section_break_fhui",
-  "navbar_items"
+  "navbar_items",
+  "document_references_tab",
+  "section_break_docref",
+  "allowed_doctypes"
  ],
  "fields": [
   {
@@ -96,11 +101,41 @@
   {
    "fieldname": "section_break_z5nn",
    "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "section_break_editor",
+   "fieldtype": "Section Break",
+   "label": "Editor Settings"
+  },
+  {
+   "default": "Rich Text",
+   "fieldname": "default_editor",
+   "fieldtype": "Link",
+   "label": "Default Editor",
+   "options": "Wiki Editor",
+   "description": "Default editor type for new pages in this space"
+  },
+  {
+   "fieldname": "document_references_tab",
+   "fieldtype": "Tab Break",
+   "label": "Document References"
+  },
+  {
+   "fieldname": "section_break_docref",
+   "fieldtype": "Section Break",
+   "label": "Allowed DocTypes",
+   "description": "Configure which DocTypes can be referenced in wiki pages within this space"
+  },
+  {
+   "fieldname": "allowed_doctypes",
+   "fieldtype": "Table",
+   "label": "Allowed DocTypes",
+   "options": "Wiki Space DocType Reference"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-07-30 00:06:22.631960",
+ "modified": "2025-10-07 12:00:00.000000",
  "modified_by": "Administrator",
  "module": "Wiki",
  "name": "Wiki Space",

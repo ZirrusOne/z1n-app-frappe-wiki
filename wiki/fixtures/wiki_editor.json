@@ -1,0 +1,18 @@
+[
+ {
+  "doctype": "Wiki Editor",
+  "name": "Text",
+  "editor_name": "Text"
+ },
+ {
+  "doctype": "Wiki Editor",
+  "name": "YAML",
+  "editor_name": "YAML"
+ },
+ {
+  "doctype": "Wiki Editor",
+  "name": "Rich Text",
+  "editor_name": "Rich Text"
+ }
+]
+

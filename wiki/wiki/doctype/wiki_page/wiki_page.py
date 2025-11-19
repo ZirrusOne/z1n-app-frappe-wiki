@@ -26,6 +26,28 @@ from wiki.wiki.doctype.wiki_settings.wiki_settings import get_all_spaces
 
 
 class WikiPage(WebsiteGenerator):
+	def before_insert(self):
+		"""
+		Set editor type from Wiki Space default if not already set.
+		Extracts the Wiki Space from the page route and inherits its default_editor setting.
+		Route format: {wiki_space_route}/{page_route}
+		"""
+		if not self.editor:
+			# Extract Wiki Space from route (format: {wiki_space_route}/{page_route})
+			if self.route and "/" in self.route:
+				wiki_space_route = self.route.split("/")[0]
+				wiki_space_name = frappe.get_value("Wiki Space", {"route": wiki_space_route}, "name")
+				if wiki_space_name:
+					default_editor = frappe.get_value("Wiki Space", wiki_space_name, "default_editor")
+					if default_editor:
+						self.editor = default_editor
+					else:
+						self.editor = "Text"
+				else:
+					self.editor = "Text"
+			else:
+				self.editor = "Text"
+
 	def before_save(self):
 		if old_title := frappe.db.get_value("Wiki Page", self.name, "title"):
 			if old_title != self.title:
@@ -231,6 +253,14 @@ class WikiPage(WebsiteGenerator):
 					"Wiki Page Patch", {"wiki_page": ["in", wiki_pages_in_space], "status": "Under Review"}
 				)
 
+			# Check if user can access wiki settings
+			user_roles = frappe.get_roles(frappe.session.user)
+			context.show_wiki_settings_link = (
+				frappe.has_permission("Wiki Settings", "write") or
+				"Wiki Manager" in user_roles or
+				"System Manager" in user_roles
+			)
+
 		wiki_settings = frappe.get_single("Wiki Settings")
 
 		# Extract wiki_space names in the original order
@@ -287,6 +317,7 @@ class WikiPage(WebsiteGenerator):
 		context.last_revision = self.get_last_revision()
 		context.show_dropdown = frappe.session.user != "Guest"
 		context.number_of_revisions = frappe.db.count("Wiki Page Revision Item", {"wiki_page": self.name})
+		context.editor_type = self.editor or "Text"
 		# TODO: group all context values
 		context.hide_on_sidebar = frappe.get_value(
 			"Wiki Group Item", {"wiki_page": self.name}, "hide_on_sidebar"
@@ -668,6 +699,10 @@ def update_page_settings(name, settings):
 	)
 
 	frappe.db.set_value("Wiki Page", name, "route", settings.route)
+
+	# Update editor if provided in settings
+	if settings.get("editor"):
+		frappe.db.set_value("Wiki Page", name, "editor", settings.editor)
 
 
 @frappe.whitelist()

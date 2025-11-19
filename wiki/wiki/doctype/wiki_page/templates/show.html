@@ -13,7 +13,11 @@
 		<h1 class="wiki-title">{{ title }}</h1>
 	</div>
 	<div class="wiki-content">
-		{{frappe.utils.md_to_html(content)}}
+		{% if editor_type == "YAML" %}
+			<pre><code class="language-yaml">{{ content | e }}</code></pre>
+		{% else %}
+			{{frappe.utils.md_to_html(content)}}
+		{% endif %}
 	</div>
 	<input value={{ name }} class="d-none" name="wiki-page-name"></input>
 	{% include "wiki/doctype/wiki_page/templates/revisions.html" %}

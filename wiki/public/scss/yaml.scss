@@ -1,0 +1,62 @@
+// YAML Content Display Styles
+// Custom syntax highlighting colors for YAML content in wiki pages
+// Uses GitHub dark theme color palette for consistency
+
+.wiki-content pre {
+  background-color: #0d1117;
+  border-radius: 6px;
+  padding: 1.5rem;
+  overflow-x: auto;
+  margin: 1rem 0;
+  border: 1px solid #30363d;
+}
+
+.wiki-content pre code.language-yaml {
+  color: #c9d1d9;
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', 'source-code-pro', monospace;
+  font-size: 0.9rem;
+  line-height: 1.6;
+  white-space: pre;
+  display: block;
+
+  // Note: !important is required to override highlight.js inline styles
+  // highlight.js applies colors via inline style attributes which have higher specificity
+
+  // YAML Keys (property names) - Light blue/cyan
+  .hljs-attr {
+    color: #79c0ff !important;
+    font-weight: 500;
+  }
+
+  // YAML Values (strings) - Green
+  .hljs-string {
+    color: #7ee787 !important;
+  }
+
+  // Numbers - Orange
+  .hljs-number {
+    color: #ffa657 !important;
+  }
+
+  // Booleans and literals (true, false, null) - Purple
+  .hljs-literal {
+    color: #d2a8ff !important;
+  }
+
+  // Comments - Gray
+  .hljs-comment {
+    color: #8b949e !important;
+    font-style: italic;
+  }
+
+  // Bullets/list markers - Yellow
+  .hljs-bullet {
+    color: #f0883e !important;
+  }
+
+  // Meta/special characters - Light gray
+  .hljs-meta {
+    color: #c9d1d9 !important;
+  }
+}
+

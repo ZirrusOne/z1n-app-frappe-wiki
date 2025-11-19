@@ -7,6 +7,13 @@ app_color = "grey"
 app_email = "developers@frappe.io"
 app_license = "MIT"
 
+# Fixtures
+# --------
+fixtures = [
+	{"dt": "Wiki Editor", "filters": [["name", "in", ["Text", "YAML", "Rich Text"]]]},
+	{"dt": "Role", "filters": [["name", "in", ["Wiki Manager"]]]}
+]
+
 add_to_apps_screen = [
 	{
 		"name": "wiki",

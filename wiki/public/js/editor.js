@@ -1,6 +1,11 @@
 import * as Ace from "ace-builds";
 import "ace-builds/src-noconflict/mode-markdown";
+import "ace-builds/src-noconflict/mode-yaml";
 import "ace-builds/src-noconflict/theme-tomorrow_night";
+import * as yaml from "js-yaml";
+
+// Configure Ace to not use web workers (they cause issues with bundling)
+Ace.config.set("useWorker", false);
 
 const editorContainer = document.getElementById("wiki-editor");
 const previewContainer = $("#preview-container");
@@ -14,10 +19,18 @@ const draftWikiPageBtn = document.querySelector(
   '[data-wiki-button="draftWikiPage"]',
 );
 let showPreview = false;
+let currentEditorType = "Text"; // Default to Text editor
+
+// Get editor type from page data attribute
+const pageEditorType = document.querySelector('[data-wiki-editor-type]')?.dataset?.wikiEditorType || "Text";
+currentEditorType = pageEditorType;
+
+const initialMode = currentEditorType === "YAML" ? "ace/mode/yaml" : "ace/mode/markdown";
+const initialPlaceholder = currentEditorType === "YAML" ? "Write your YAML content here..." : "Write your content here...";
 
 let editor = Ace.edit(editorContainer, {
-  mode: "ace/mode/markdown",
-  placeholder: "Write your content here...",
+  mode: initialMode,
+  placeholder: initialPlaceholder,
   theme: "ace/theme/tomorrow_night",
 });
 
@@ -30,6 +43,12 @@ $(document).ready(() => {
   if (urlParams.get("editWiki") || urlParams.get("wikiPagePatch")) {
     setEditor();
   }
+
+  // Hide markdown toolbar and update label if in YAML mode
+  if (currentEditorType === "YAML") {
+    $("#markdown-toolbar").hide();
+    $(".editor-container").prev("label").text("YAML Content");
+  }
 });
 
 previewContainer.hide();
@@ -39,31 +58,100 @@ previewToggleBtn.on("click", function () {
   if (showPreview) {
     previewContainer.show();
     $(".wiki-editor-container").hide();
-    frappe.call({
-      method: "wiki.wiki.doctype.wiki_page.wiki_page.convert_markdown",
-      args: {
-        markdown: editor.getValue(),
-      },
-      callback: (r) => {
-        previewContainer.html(`<h1>${wikiTitleInput.val()}</h1>` + r.message);
-      },
-    });
+
+    if (currentEditorType === "YAML") {
+      // For YAML, show formatted preview
+      const content = editor.getValue();
+      const validation = validateYAML(content);
+
+      if (validation.valid) {
+        try {
+          const parsed = yaml.load(content);
+          const formatted = `<h1>${wikiTitleInput.val()}</h1><pre><code class="language-yaml">${editor.getValue()}</code></pre>`;
+          previewContainer.html(formatted);
+        } catch (e) {
+          previewContainer.html(`<h1>${wikiTitleInput.val()}</h1><div class="alert alert-danger">Invalid YAML: ${e.message}</div>`);
+        }
+      } else {
+        previewContainer.html(`<h1>${wikiTitleInput.val()}</h1><div class="alert alert-danger">Invalid YAML: ${validation.error}</div>`);
+      }
+    } else {
+      // For markdown, use existing conversion
+      frappe.call({
+        method: "wiki.wiki.doctype.wiki_page.wiki_page.convert_markdown",
+        args: {
+          markdown: editor.getValue(),
+        },
+        callback: (r) => {
+          previewContainer.html(`<h1>${wikiTitleInput.val()}</h1>` + r.message);
+        },
+      });
+    }
   } else {
     previewContainer.hide();
     $(".wiki-editor-container").show();
   }
 });
 
+/**
+ * Initializes the wiki editor with appropriate settings based on editor type (Text/YAML)
+ * Configures Ace editor mode, validation, and UI elements
+ */
 function setEditor() {
   const urlParams = new URLSearchParams(window.location.search);
   const currentUrl = new URL(window.location.href);
+
+  // Re-detect editor type from data attribute (in case it changed)
+  const detectedEditorType = document.querySelector('[data-wiki-editor-type]')?.dataset?.wikiEditorType || "Text";
+  currentEditorType = detectedEditorType;
+
+  // Set the appropriate mode based on editor type
+  const editorMode = currentEditorType === "YAML" ? "ace/mode/yaml" : "ace/mode/markdown";
+  editor.session.setMode(editorMode);
 
   editor.setOptions({
     wrap: true,
     showPrintMargin: true,
     theme: "ace/theme/tomorrow_night",
+    tabSize: 2,
+    useSoftTabs: true,
   });
   editor.renderer.lineHeight = 20;
+
+  // Update placeholder based on editor type
+  const placeholder = currentEditorType === "YAML" ? "Write your YAML content here..." : "Write your content here...";
+  editor.setOption("placeholder", placeholder);
+
+  // Hide/show markdown toolbar and update label based on editor type
+  if (currentEditorType === "YAML") {
+    $("#markdown-toolbar").hide();
+    $(".editor-container").prev("label").text("YAML Content");
+  } else {
+    $("#markdown-toolbar").show();
+    $(".editor-container").prev("label").text("Content");
+  }
+
+  // Add real-time YAML validation if in YAML mode
+  if (currentEditorType === "YAML") {
+    editor.session.on("change", function() {
+      const content = editor.getValue();
+      const validation = validateYAML(content);
+
+      // Clear previous annotations
+      editor.session.clearAnnotations();
+
+      if (!validation.valid && validation.line !== undefined) {
+        // Add error annotation
+        editor.session.setAnnotations([{
+          row: validation.line,
+          column: validation.column || 0,
+          text: validation.error,
+          type: "error"
+        }]);
+      }
+    });
+  }
+
   frappe.call({
     method: "wiki.wiki.doctype.wiki_page.wiki_page.get_markdown_content",
     args: {
@@ -79,9 +167,64 @@ function setEditor() {
   wikiTitleInput.val($(".wiki-title").text()?.trim() || "");
 }
 
+/**
+ * Validates YAML content and returns validation result
+ * @param {string} content - The YAML content to validate
+ * @returns {Object} Validation result with valid flag, error message, line and column if invalid
+ */
+function validateYAML(content) {
+  try {
+    yaml.load(content);
+    return { valid: true };
+  } catch (e) {
+    return {
+      valid: false,
+      error: e.message,
+      line: e.mark?.line,
+      column: e.mark?.column
+    };
+  }
+}
+
+/**
+ * Saves the wiki page with validation
+ * For YAML pages, validates syntax before saving
+ * @param {boolean} draft - Whether to save as draft
+ */
 function saveWikiPage(draft = false) {
   const title = wikiTitleInput.val()?.trim();
   const content = editor.getValue();
+
+  // Validate YAML if editor type is YAML
+  if (currentEditorType === "YAML") {
+    const validation = validateYAML(content);
+    if (!validation.valid) {
+      // Format a more user-friendly error message
+      let errorMsg = `<p><strong>Your YAML has a syntax error and cannot be saved.</strong></p>`;
+
+      if (validation.line !== undefined) {
+        errorMsg += `<p><strong>Location:</strong> Line ${validation.line + 1}, Column ${validation.column + 1}</p>`;
+      }
+
+      // Clean up the error message to be more readable
+      let cleanError = validation.error;
+      // Remove technical jargon and make it more user-friendly
+      cleanError = cleanError.replace(/can not read a block mapping entry;/gi, 'Invalid indentation or structure:');
+      cleanError = cleanError.replace(/a multiline key may not be an implicit key/gi, 'Multi-line keys must use explicit syntax');
+      cleanError = cleanError.replace(/\(\d+:\d+\)/g, ''); // Remove coordinate references from error text
+
+      errorMsg += `<p><strong>Error:</strong> ${cleanError}</p>`;
+      errorMsg += `<p><em>Tip: Check your indentation and make sure colons are followed by spaces.</em></p>`;
+
+      frappe.msgprint({
+        title: __("YAML Validation Error"),
+        message: errorMsg,
+        indicator: "red",
+      });
+      return; // Prevent saving
+    }
+  }
+
   const urlParams = new URLSearchParams(window.location.search);
   const isEmptyEditor = !!urlParams.get("newWiki");
   frappe.call({

@@ -53,6 +53,36 @@
       background-color: var(--searchbar-color);
       color: var(--text-color);
     }
+
+    select {
+      width: 100%;
+      background: $gray-200;
+      background-color: var(--searchbar-color);
+      color: var(--text-color);
+      border-radius: 0.375rem;
+      border: 1px solid var(--border-color);
+      outline: none;
+      padding: 0.25rem 0.5rem;
+      font-size: 13px;
+      line-height: 1.25rem;
+      cursor: pointer;
+
+      // Add dropdown arrow indicator
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23666' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 0.5rem center;
+      padding-right: 2rem;
+
+      &:hover {
+        border-color: var(--primary);
+      }
+
+      &:focus {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 2px rgba(var(--primary-rgb), 0.1);
+      }
+    }
   }
 
   .modal-footer {
