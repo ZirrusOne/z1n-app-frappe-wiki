@@ -5,6 +5,6 @@
 from frappe.model.document import Document
 
 
-class WikiSpaceDoctypeReference(Document):
+class WikiSpaceDocTypeReference(Document):
 	pass
 
